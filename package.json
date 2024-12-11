@@ -13,5 +13,11 @@
         "postcss": "^8.4.47",
         "tailwindcss": "^3.4.13",
         "vite": "^6.0"
+    },
+    "dependencies": {
+        "aos": "^2.3.4",
+        "bootstrap-icons": "^1.11.3",
+        "glightbox": "^3.3.0",
+        "swiper": "^11.1.15"
     }
 }
