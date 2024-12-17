@@ -8,28 +8,34 @@ Route::get('/', function () {
 Route::get('/index', function () {
     return view('index');
 });
-Route::get('/about.html', function () {
+Route::get('/about', function () {
     return view('about');
 });
-Route::get('/blog-details.html', function () {
+Route::get('/blog-details', function () {
     return view('blog-details');
 });
-Route::get('/blog.html', function () {
+Route::get('/blog', function () {
     return view('blog');
 });
-Route::get('/contact.html', function () {
+Route::get('/contact', function () {
     return view('contact');
 });
-Route::get('/portfolio-details.html', function () {
+Route::get('/portfolio-details', function () {
     return view('portfolio-details');
 });
-Route::get('/service-details.html', function () {
+Route::get('/portfolio', function () {
+    return view('portfolio');
+});
+Route::get('/service-details', function () {
     return view('service-details');
 });
-Route::get('/starter-page.html', function () {
+Route::get('/services', function () {
+    return view('services');
+});
+Route::get('/starter-page', function () {
     return view('starter-page');
 });
-Route::get('/team.html', function () {
+Route::get('/team', function () {
     return view('team');
 });
 
