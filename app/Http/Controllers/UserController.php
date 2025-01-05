@@ -44,7 +44,7 @@ class UserController extends Controller
         }
     }
     public function sendOtpEmail(User $user){
-        dd($user);
+        // dd($user);
         $otp = rand(100000,999999);
         try {
             // Start a database transaction
@@ -105,7 +105,7 @@ class UserController extends Controller
     //     return response()->json(['status' => 200, 'message' => 'Successfully verified']);
     // }
 
-    public function  $user->otp_expires_at = now()->addMinutes(10); (){
+    public function  fetchAllUser(){
         $users = User::all();
         return response()->json([
            'users' => $users
