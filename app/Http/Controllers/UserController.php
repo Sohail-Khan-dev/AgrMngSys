@@ -101,11 +101,13 @@ class UserController extends Controller
             return response()->json(['status' => 500, 'message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
         }
     }
+    
     // public function verifyOTP(Request $request){
     //     return response()->json(['status' => 200, 'message' => 'Successfully verified']);
     // }
 
-    public function  fetchAllUser(){
+
+    public function  fetchAllUsers(){
         $users = User::all();
         return response()->json([
            'users' => $users
