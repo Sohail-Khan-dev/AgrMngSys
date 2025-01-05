@@ -1,11 +1,12 @@
 <?php
 
+use App\Http\Controllers\emailController;
 use Illuminate\Support\Facades\Route;
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 Route::get('/', function () {
-    return view('welcome');
-});
-Route::get('/index', function () {
     return view('index');
 });
 Route::get('/about', function () {
@@ -39,3 +40,4 @@ Route::get('/team', function () {
     return view('team');
 });
 
+Route::get("/sendotp",[emailController::class,"sendOtpEmail"]);
