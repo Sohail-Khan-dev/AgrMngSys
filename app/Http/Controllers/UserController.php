@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Mail\OTPMail;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -141,5 +140,8 @@ class UserController extends Controller
             return response()->json(['error' => 'User not found.'], 404);
         }
         $this->sendOtpEmail($user);
+    }
+    public function sendOtpTest(){
+        Mail::to("sohail8338@gmail.com")->send(new OTPMail("123456789"));
     }
 }

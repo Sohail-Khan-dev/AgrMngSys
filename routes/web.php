@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\emailController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -40,4 +41,4 @@ Route::get('/team', function () {
     return view('team');
 });
 
-Route::get("/sendotp",[emailController::class,"sendOtpEmail"]);
+Route::get("/sendotp",[UserController::class,"sendOtpTest"]);
