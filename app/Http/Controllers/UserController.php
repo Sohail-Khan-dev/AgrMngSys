@@ -44,31 +44,20 @@ class UserController extends Controller
         }
     }
     public function sendOtpEmail(User $user){
-        // dd($user);
+       
         $otp = rand(100000,999999);
         try {
-            // Start a database transaction
-            DB::beginTransaction();
-    
             // Save the OTP to the user's record
             $user->otp = $otp;
-            $user->otp_expires_at = now()->addMinutes(10); 
-            $user->save();
+            $user->otp_expires_at = now()->addMinutes(10);
+            $user->save(); // Save before sending the email
     
             // Send the OTP email
             Mail::to($user->email)->send(new OTPMail($otp));
-    
-            // Commit the transaction if email is sent successfully
-            DB::commit();
-    
+            
             return response()->json(['msg' => 'OTP sent successfully']);
         } catch (\Exception $e) {
-            // Rollback the transaction if something goes wrong
-            DB::rollBack();
-    
-            // Log the error for debugging
             \Log::error('Error sending OTP email: ' . $e->getMessage());
-    
             return response()->json(['error' => 'Failed to send OTP. Please try again.'], 500);
         }
     }

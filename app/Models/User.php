@@ -25,7 +25,9 @@ class User extends Authenticatable
         'dob',
         'id_number',
         'password',
-        'confirm_password'
+        'confirm_password',
+        'otp',
+        'otp_expires_at'
     ];
 
     /**
