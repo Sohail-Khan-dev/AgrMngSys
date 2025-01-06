@@ -107,7 +107,7 @@ class UserController extends Controller
         // Validate the request
         $request->validate([
             'email' => 'required|email',
-            'otp' => 'required|digits:6',
+            'otp' => 'required|digits:4',
         ]);
         // Retrieve the user by email
         $user = User::where('email', $request->email)->first();
