@@ -44,7 +44,7 @@ class UserController extends Controller
     }
     public function sendOtpEmail(User $user){
        
-        $otp = rand(100000,999999);
+        $otp = rand(1000,9999);
         try {
             // Save the OTP to the user's record
             $user->otp = $otp;
