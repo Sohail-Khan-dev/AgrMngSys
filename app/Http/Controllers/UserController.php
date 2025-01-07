@@ -76,15 +76,15 @@ class UserController extends Controller
         try {
             if (auth()->attempt($credentials)) {
                 $user = auth()->user();
-                
+
                 // Revoke previous Token and assign new token 
                 $user->tokens()->delete();
                 $token = $user->createToken('authToken')->plainTextToken;
-
+                $userReocrd = $user->only(['name','email','dob','id_number','phone_number']);
                 return response()->json([
                     'status' => 200,
                     'message' => 'Login successful',
-                    'user' => $user, 'token' => $token]);
+                    'user' => $userReocrd, 'token' => $token]);
             }
             return response()->json(['status'=>401 ,'message' => 'Invalid credentials theek da credentials'], 401);
         }catch (\Exception $e)
