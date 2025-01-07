@@ -76,6 +76,9 @@ class UserController extends Controller
         try {
             if (auth()->attempt($credentials)) {
                 $user = auth()->user();
+                
+                // Revoke previous Token and assign new token 
+                $user->tokens()->delete();
                 $token = $user->createToken('authToken')->plainTextToken;
 
                 return response()->json([
