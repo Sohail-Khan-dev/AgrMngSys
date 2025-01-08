@@ -74,6 +74,10 @@ class UserController extends Controller
 
         $credentials = $request->only('email', 'password');
         try {
+            $user = \App\Models\User::where('email', $request->email)->first();
+            if (!$user) {
+                return response()->json(['status' => 301, 'message' => 'Email not found.'], 401);
+            }
             if (auth()->attempt($credentials)) {
                 $user = auth()->user();
 
