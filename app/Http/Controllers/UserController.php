@@ -36,7 +36,8 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
             ]);
             $this->sendOtpEmail($user);
-            return response()->json(['status' => 200, 'message' => 'User registered successfully', 'user' => $user], 200);
+            $userReocrd = $user->only(['name','email','dob','id_number','phone_number']);
+            return response()->json(['status' => 200, 'message' => 'User registered successfully', 'user' => $userReocrd], 200);
         }catch (\Exception $e) {
             // Return a 500 response if there's a server error
             return response()->json(['status' => 500, 'message' => 'Internal Server Error', 'error' => $e->getMessage()], 500);
