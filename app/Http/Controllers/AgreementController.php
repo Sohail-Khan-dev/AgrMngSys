@@ -15,6 +15,7 @@ class AgreementController extends Controller
          // Validation rules
     $validator = Validator::make($request->all(), [
         'email' => 'required|email|exists:users,email',
+        'slug' => 'required|string',
         'title' => 'required|string|max:255',
         'agreement_file' => 'required|string',
         'signature' => 'nullable|string',
@@ -40,6 +41,7 @@ class AgreementController extends Controller
         $agreement = new Agreement();
         $agreement->user_id = $user->id;
         $agreement->title = $request->title;
+        $agreement->slug = $request->slug;
         $agreement->agreement_file = $request->agreement_file;
         $agreement->save();
         if($request->signature){

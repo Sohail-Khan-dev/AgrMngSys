@@ -10,6 +10,8 @@ class Agreement extends Model
         'user_id',
         'agreement_id',
         'status',
+        'slug',
+        'title',
         'signature'
     ];
     public function signStatus()
