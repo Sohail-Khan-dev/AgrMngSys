@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AgreementController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -13,3 +14,4 @@ Route::post('/logout',[UserController::class,'logout']);
 // Route::get('/users', [UserController::class, 'fetchAllUsers']);
 Route::post('/verify', [UserController::class, 'verifyOTP']);   // this will need password and the otp 
 Route::post('/resendOTP', [UserController::class, 'resendOTP']); // this will need an email to resend the Otp .
+Route::post('/agreement', [AgreementController::class, 'createAgreement']);

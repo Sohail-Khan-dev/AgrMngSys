@@ -40,6 +40,14 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function signStatus()
+    {
+        return $this->hasMany(SignStatus::class);
+    }
+    public function agreement()
+    {
+        return $this->hasMany(Agreement::class);
+    }
     /**
      * Get the attributes that should be cast.
      *
