@@ -41,6 +41,7 @@ class AgreementController extends Controller
         $agreement->user_id = $user->id;
         $agreement->title = $request->title;
         $agreement->agreement_file = $request->agreement_file;
+        $agreement->save();
         if($request->signature){
             $sign_status = new SignStatus();
             $sign_status->user_id = $user->id;
@@ -48,7 +49,7 @@ class AgreementController extends Controller
             $sign_status->signature = $request->signature;
             $sign_status->save();
         }
-        $agreement->save();
+       
         return response()->json(['message' => 'Agreement created successfully'], 200);
     }
 
