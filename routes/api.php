@@ -14,4 +14,4 @@ Route::post('/logout',[UserController::class,'logout']);
 // Route::get('/users', [UserController::class, 'fetchAllUsers']);
 Route::post('/verify', [UserController::class, 'verifyOTP']);   // this will need password and the otp 
 Route::post('/resendOTP', [UserController::class, 'resendOTP']); // this will need an email to resend the Otp .
-Route::post('/agreement', [AgreementController::class, 'createAgreement']);
+Route::post('/create_agreement', [AgreementController::class, 'createAgreement']);
