@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 class AgreementController extends Controller
 {
     public function createAgreement(Request $request) {
+        dd($request->all());
          // Validation rules
     $validator = Validator::make($request->all(), [
         'email' => 'required|email|exists:users,email',
