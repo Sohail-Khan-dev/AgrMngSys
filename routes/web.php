@@ -1,8 +1,8 @@
 <?php
 
-use App\Http\Controllers\emailController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AgreementController;
 
 // Route::get('/', function () {
 //     return view('welcome');
@@ -42,3 +42,4 @@ Route::get('/team', function () {
 });
 
 Route::get("/sendotp",[UserController::class,"sendOtpTest"]);
+Route::get('/getAllAgreements', [AgreementController::class, 'getAllAgreements']);
