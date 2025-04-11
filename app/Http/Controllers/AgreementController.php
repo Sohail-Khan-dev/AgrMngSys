@@ -81,7 +81,13 @@ class AgreementController extends Controller
         }
 
         // Get agreements
-        $agreements = Agreement::where('user_id', $user->id)->select('id', 'title', 'created_at')->get();
+        $agreements = Agreement::where('user_id', $user->id)
+            ->select('id', 'title', 'created_at')
+            ->get()
+            ->map(function ($agreement) {
+                $agreement->created_at = $agreement->created_at->format('Y-m-d');
+                return $agreement;
+            });
 
         // Check if agreements exist
         if ($agreements->isEmpty()) {
@@ -121,6 +127,10 @@ class AgreementController extends Controller
                 'message' => 'Agreement not found'
             ], 404);
         }
+
+        // Format the date to show only Y-m-d
+        $agreement->created_at = $agreement->created_at->format('Y-m-d');
+        $agreement->updated_at = $agreement->updated_at->format('Y-m-d');
 
         return response()->json([
             'status' => true,
