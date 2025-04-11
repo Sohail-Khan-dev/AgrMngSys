@@ -57,8 +57,8 @@ class AgreementController extends Controller
     }
     public function getAgreements(Request $request)
     {
-        //  dd($request->all());
-        $agreements = Agreement::where('user_id', $request->id)->get();
+        $user_id = User::where('email', $request->email)->first()->id;
+        $agreements = Agreement::where('user_id', $user_id)->get();
         return response()->json(['agreements' => $agreements], 200);
     }
 }
