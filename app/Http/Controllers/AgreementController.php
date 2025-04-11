@@ -63,6 +63,7 @@ class AgreementController extends Controller
     }
     public function getSigleAgreement(Request $request)
     {
+        dump($request->all());
         $agreement = Agreement::where('id', $request->id)->first();
         dd($agreement);
         return response()->json(['agreement' => $agreement], 200);
