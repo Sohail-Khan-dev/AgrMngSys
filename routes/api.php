@@ -16,4 +16,4 @@ Route::post('/verify', [UserController::class, 'verifyOTP']);           // this 
 Route::post('/resendOTP', [UserController::class, 'resendOTP']);        // this will need an email to resend the Otp .
 Route::post('/create_agreement', [AgreementController::class, 'createAgreement']);
 Route::post('/getAgreements', [AgreementController::class, 'getAgreements']);
-Route::post('/getSigleAgreement', [AgreementController::class, 'getSigleAgreement']);
+Route::post('/getSingleAgreement', [AgreementController::class, 'getSigleAgreement']);
