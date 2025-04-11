@@ -80,14 +80,19 @@ class AgreementController extends Controller
             ], 404);
         }
 
-        // Get agreements
+        // Get agreements with base query
         $agreements = Agreement::where('user_id', $user->id)
             ->select('id', 'title', 'created_at')
-            ->get()
-            ->map(function ($agreement) {
-                $agreement->created_at = $agreement->created_at->format('Y-m-d');
-                return $agreement;
-            });
+            ->get();
+
+        // Format the dates and prepare the response data
+        $formattedAgreements = $agreements->map(function ($agreement) {
+            return [
+                'id' => $agreement->id,
+                'title' => $agreement->title,
+                'created_at' => $agreement->created_at->format('Y-m-d')
+            ];
+        });
 
         // Check if agreements exist
         if ($agreements->isEmpty()) {
@@ -100,7 +105,7 @@ class AgreementController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Agreements retrieved successfully',
-            'agreements' => $agreements
+            'agreements' => $formattedAgreements
         ], 200);
     }
     public function getSigleAgreement(Request $request)
@@ -128,14 +133,22 @@ class AgreementController extends Controller
             ], 404);
         }
 
-        // Format the date to show only Y-m-d
-        $agreement->created_at = $agreement->created_at->format('Y-m-d');
-        $agreement->updated_at = $agreement->updated_at->format('Y-m-d');
+        // Format the agreement data with formatted dates
+        $formattedAgreement = [
+            'id' => $agreement->id,
+            'user_id' => $agreement->user_id,
+            'title' => $agreement->title,
+            'slug' => $agreement->slug,
+            'agreement_file' => $agreement->agreement_file,
+            'sign_status_id' => $agreement->sign_status_id,
+            'created_at' => $agreement->created_at->format('Y-m-d'),
+            'updated_at' => $agreement->updated_at->format('Y-m-d')
+        ];
 
         return response()->json([
             'status' => true,
             'message' => 'Agreement retrieved successfully',
-            'agreement' => $agreement
+            'agreement' => $formattedAgreement
         ], 200);
     }
 }
