@@ -58,12 +58,15 @@ class AgreementController extends Controller
     public function getAgreements(Request $request)
     {
         $user_id = User::where('email', $request->email)->first()->id;
-        $agreements = Agreement::where('user_id', $user_id)->pluck('id', 'title', 'created_at');
+        $agreements = Agreement::where('user_id', $user_id)->pluck('id', 'title', 'created_at')->toArray();
+        dump($agreements);
+        // I am not getting the Crated in the Json 
         return response()->json($agreements, 200);
     }
     public function getSigleAgreement(Request $request)
     {
         $agreement = Agreement::where('id', $request->id)->first();
+        dd($agreement);
         return response()->json(['agreement' => $agreement], 200);
     }
 }
