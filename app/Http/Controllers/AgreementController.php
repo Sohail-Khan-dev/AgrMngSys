@@ -55,7 +55,7 @@ class AgreementController extends Controller
 
         return response()->json(['message' => 'Agreement created successfully'], 200);
     }
-    public function getAllAgreements(Request $request)
+    public function getAgreements(Request $request)
     {
          dd($request->all());
         $agreements = Agreement::where('id', $request->id)->get();
