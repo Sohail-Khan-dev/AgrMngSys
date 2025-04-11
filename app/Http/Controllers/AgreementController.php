@@ -57,15 +57,75 @@ class AgreementController extends Controller
     }
     public function getAgreements(Request $request)
     {
-        $user_id = User::where('email', $request->email)->first()->id;
-        $agreements = Agreement::where('user_id', $user_id)->select('id', 'title', 'created_at')->get();
-        return response()->json($agreements, 200);
+        // Validate email
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        // If validation fails, return response with errors
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        // Get user ID
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // Get agreements
+        $agreements = Agreement::where('user_id', $user->id)->select('id', 'title', 'created_at')->get();
+
+        // Check if agreements exist
+        if ($agreements->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No agreements found for this user'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreements retrieved successfully',
+            'agreements' => $agreements
+        ], 200);
     }
     public function getSigleAgreement(Request $request)
     {
-        dump($request->all());
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|exists:agreements,id',
+        ]);
+
+        // If validation fails, return response with errors
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
         $agreement = Agreement::where('id', $request->id)->first();
-        dd($agreement);
-        return response()->json(['agreement' => $agreement], 200);
+
+        if (!$agreement) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Agreement not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement retrieved successfully',
+            'agreement' => $agreement
+        ], 200);
     }
 }
