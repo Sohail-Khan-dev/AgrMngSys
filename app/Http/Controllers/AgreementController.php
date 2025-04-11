@@ -58,7 +58,12 @@ class AgreementController extends Controller
     public function getAgreements(Request $request)
     {
         $user_id = User::where('email', $request->email)->first()->id;
-        $agreements = Agreement::where('user_id', $user_id)->pluck('title','created_at');
+        $agreements = Agreement::where('user_id', $user_id)->pluck('id','title','created_at');
         return response()->json(['agreements' => $agreements], 200);
+    }
+    public function getSigleAgreement(Request $request)
+    {
+        $agreement = Agreement::where('id', $request->id)->first();
+        return response()->json(['agreement' => $agreement], 200);
     }
 }
