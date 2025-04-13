@@ -12,7 +12,7 @@ class AgreementController extends Controller
 {
     public function createAgreement(Request $request)
     {
-        dump($request->all());
+        // dump($request->all());
         // Validation rules
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
