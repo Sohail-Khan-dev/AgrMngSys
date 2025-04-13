@@ -52,7 +52,7 @@ class AgreementController extends Controller
             $sign_status->save();
         }
 
-        return response()->json(['message' => 'Agreement created successfully'], 200);
+        return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
     public function getAgreements(Request $request)
     {
