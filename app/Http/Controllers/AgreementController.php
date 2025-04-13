@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Agreement;
 use App\Models\SignStatus;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -12,7 +12,6 @@ class AgreementController extends Controller
 {
     public function createAgreement(Request $request)
     {
-        // dd($request->all());
         // Validation rules
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
@@ -149,6 +148,127 @@ class AgreementController extends Controller
             'status' => true,
             'message' => 'Agreement retrieved successfully',
             'agreement' => $formattedAgreement
+        ], 200);
+    }
+
+    /**
+     * Share an agreement with multiple users
+     */
+    public function shareAgreement(Request $request)
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'agreement_id' => 'required|exists:agreements,id',
+            // 'emails' => 'required|array',
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        // If validation fails, return response with errors
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $agreement = Agreement::findOrFail($request->agreement_id);
+        $sharedWith = "None";
+        $alreadyShared = "None";
+        $errors = "None";
+        $email = $request->email;
+        // Process each email
+        // foreach ($request->emails as $email) {
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $errors = "User with email {$email} not found";
+            }
+
+            // Check if the agreement is already shared with this user
+            $existingShare = SignStatus::where('agreement_id', $agreement->id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($existingShare) {
+                $alreadyShared = $email;
+            }
+
+            // Create a new sign status record for this user
+            $signStatus = new SignStatus();
+            $signStatus->user_id = $user->id;
+            $signStatus->agreement_id = $agreement->id;
+            $signStatus->status = 'pending';
+            $signStatus->save();
+
+            $sharedWith[] = $email;
+        // }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement shared successfully',
+            'shared_with' => $sharedWith,
+            'already_shared' => $alreadyShared,
+            'errors' => $errors
+        ], 200);
+    }
+
+    /**
+     * Get all users who have access to a specific agreement
+     */
+    public function getAgreementUsers(Request $request)
+    {
+        // Validate request
+        $validator = Validator::make($request->all(), [
+            'agreement_id' => 'required|exists:agreements,id',
+        ]);
+
+        // If validation fails, return response with errors
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $agreement = Agreement::findOrFail($request->agreement_id);
+
+        // Get all sign statuses for this agreement
+        $signStatuses = SignStatus::where('agreement_id', $agreement->id)->get();
+
+        if ($signStatuses->isEmpty()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No users have access to this agreement'
+            ], 404);
+        }
+
+        // Get user details for each sign status
+        $users = [];
+        foreach ($signStatuses as $signStatus) {
+            $user = User::find($signStatus->user_id);
+            if ($user) {
+                $users[] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'status' => $signStatus->status,
+                    'signature' => $signStatus->signature,
+                    'shared_at' => $signStatus->created_at->format('Y-m-d')
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement users retrieved successfully',
+            'agreement' => [
+                'id' => $agreement->id,
+                'title' => $agreement->title,
+                'created_at' => $agreement->created_at->format('Y-m-d')
+            ],
+            'users' => $users
         ], 200);
     }
 }
