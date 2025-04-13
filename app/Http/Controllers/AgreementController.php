@@ -201,7 +201,7 @@ class AgreementController extends Controller
             $signStatus->status = 'pending';
             $signStatus->save();
 
-            $sharedWith[] = $email;
+            $sharedWith = $email;
         // }
 
         return response()->json([
