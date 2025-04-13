@@ -12,7 +12,7 @@ class AgreementController extends Controller
 {
     public function createAgreement(Request $request)
     {
-        dd($request->all());
+        dump($request->all());
         // Validation rules
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
@@ -20,6 +20,7 @@ class AgreementController extends Controller
             'title' => 'required|string|max:255',
             'agreement_file' => 'required|string',
             'signature' => 'nullable|string',
+            
         ]);
 
         // If validation fails, return response with errors
