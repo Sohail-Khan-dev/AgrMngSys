@@ -40,8 +40,11 @@ class AgreementController extends Controller
                 'message' => 'User not found'
             ], 404);
         }
-
-        $agreement = new Agreement();
+        if($request->id){
+            $agreement = Agreement::find($request->id);
+        }else{
+            $agreement = new Agreement();
+        }
         $agreement->user_id = $user->id;
         $agreement->title = $request->title;
         $agreement->slug = $request->slug;
