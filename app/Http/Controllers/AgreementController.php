@@ -51,7 +51,6 @@ class AgreementController extends Controller
             $sign_status->signature = $request->signature;
             $sign_status->save();
         }
-
         return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
     public function getAgreements(Request $request)
@@ -83,7 +82,15 @@ class AgreementController extends Controller
         $agreements = Agreement::where('user_id', $user->id)
             ->select('id', 'title', 'created_at')
             ->get();
-
+        // Also get the Agreements that are shared with the user
+        $agreements->merge(SignStatus::where('user_id', $user->id)
+            ->select('agreement_id')
+            ->distinct()
+            ->get()
+            ->pluck('agreement_id')
+            ->map(function ($agreementId) {
+                return Agreement::find($agreementId);
+            }));
         // Format the dates and prepare the response data
         $formattedAgreements = $agreements->map(function ($agreement) {
             return [
@@ -179,7 +186,7 @@ class AgreementController extends Controller
         $email = $request->email;
         // Process each email
         // foreach ($request->emails as $email) {
-            $user = User::where('email', $email)->first();
+        $user = User::where('email', $email)->first();
 
             if (!$user) {
                 $errors = "User with email {$email} not found";
