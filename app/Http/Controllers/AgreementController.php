@@ -51,6 +51,7 @@ class AgreementController extends Controller
             $sign_status->signature = $request->signature;
             $sign_status->save();
         }
+
         return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
     public function getAgreements(Request $request)
@@ -200,15 +201,16 @@ class AgreementController extends Controller
             if ($existingShare) {
                 $alreadyShared = $email;
             }
+            else{
+                // Create a new sign status record for this user
+                $signStatus = new SignStatus();
+                $signStatus->user_id = $user->id;
+                $signStatus->agreement_id = $agreement->id;
+                $signStatus->status = 'pending';
+                $signStatus->save();
 
-            // Create a new sign status record for this user
-            $signStatus = new SignStatus();
-            $signStatus->user_id = $user->id;
-            $signStatus->agreement_id = $agreement->id;
-            $signStatus->status = 'pending';
-            $signStatus->save();
-
-            $sharedWith = $email;
+                $sharedWith = $email;
+            }
         // }
 
         return response()->json([
