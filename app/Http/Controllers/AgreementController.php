@@ -79,25 +79,29 @@ class AgreementController extends Controller
             ], 404);
         }
 
-        // Get agreements with base query
-        $agreements = Agreement::where('user_id', $user->id)
+        // Get agreements owned by the user
+        $ownedAgreements = Agreement::where('user_id', $user->id)
             ->select('id', 'title', 'created_at')
             ->get();
-        // Also get the Agreements that are shared with the user
-        $agreements->merge(SignStatus::where('user_id', $user->id)
-            ->select('agreement_id')
-            ->distinct()
-            ->get()
+
+        // Get agreements shared with the user
+        $sharedAgreementIds = SignStatus::where('user_id', $user->id)
             ->pluck('agreement_id')
-            ->map(function ($agreementId) {
-                return Agreement::find($agreementId);
-            }));
+            ->toArray();
+
+        $sharedAgreements = Agreement::whereIn('id', $sharedAgreementIds)
+            ->select('id', 'title', 'created_at')
+            ->get();
+
+        // Merge both collections
+        $agreements = $ownedAgreements->merge($sharedAgreements);
         // Format the dates and prepare the response data
-        $formattedAgreements = $agreements->map(function ($agreement) {
+        $formattedAgreements = $agreements->map(function ($agreement) use ($user) {
             return [
                 'id' => $agreement->id,
                 'title' => $agreement->title,
-                'created_at' => $agreement->created_at->format('Y-m-d')
+                'created_at' => $agreement->created_at->format('Y-m-d'),
+                'is_owner' => $agreement->user_id == $user->id
             ];
         });
 
