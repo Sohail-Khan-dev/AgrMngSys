@@ -12,6 +12,7 @@ class AgreementController extends Controller
 {
     public function createAgreement(Request $request)
     {
+        dd($request->all());
         // Validation rules
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
@@ -38,6 +39,7 @@ class AgreementController extends Controller
                 'message' => 'User not found'
             ], 404);
         }
+
         $agreement = new Agreement();
         $agreement->user_id = $user->id;
         $agreement->title = $request->title;
