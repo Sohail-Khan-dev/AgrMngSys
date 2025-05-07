@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug');
             $table->longText('agreement_file');
-            $table->string('sign_status_id')->default('pending');
+            $table->string('sign_status_id')->default('draft');
             $table->timestamps();
         });
     }

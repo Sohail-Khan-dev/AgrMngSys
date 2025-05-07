@@ -12,8 +12,6 @@ class AgreementController extends Controller
 {
     public function createAgreement(Request $request)
     {
-        // dump($request->all());
-        // Validation rules
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
             'slug' => 'required|string',
@@ -23,7 +21,6 @@ class AgreementController extends Controller
             
         ]);
 
-        // If validation fails, return response with errors
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -32,7 +29,6 @@ class AgreementController extends Controller
             ], 422);
         }
 
-        // Fetch user ID
         $user = User::where('email', $request->email)->first();
         if (!$user) {
             return response()->json([
@@ -40,7 +36,7 @@ class AgreementController extends Controller
                 'message' => 'User not found'
             ], 404);
         }
-        if($request->id){
+        if($request->id !== 0){
             $agreement = Agreement::find($request->id);
         }else{
             $agreement = new Agreement();
