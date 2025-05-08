@@ -91,19 +91,19 @@ class AgreementController extends Controller
 
         // Get agreements owned by the user
         $ownedAgreements = Agreement::where('user_id', $user->id)
+            ->with('signStatus', $status)
             ->select('id', 'title', 'created_at')
             ->get();
-            dump($ownedAgreements[0]->signStatus->status);
+            dd($ownedAgreements);
 
         // Get agreements shared with the user
-        $sharedAgreementIds = SignStatus::where('user_id', $user->id)
+        $sharedAgreementIds = SignStatus::where('user_id', $user->id)->where('status', $status)
             ->pluck('agreement_id')
             ->toArray();
 
         $sharedAgreements = Agreement::whereIn('id', $sharedAgreementIds)
             ->select('id', 'title', 'created_at')
             ->get();
-            dd($sharedAgreements[0]->signStatus->status);
 
         // Merge both collections
         $agreements = $ownedAgreements->merge($sharedAgreements);

@@ -43,3 +43,4 @@ Route::get('/team', function () {
 
 Route::get("/sendotp",[UserController::class,"sendOtpTest"]);
 Route::get('/getAllAgreements', [AgreementController::class, 'getAllAgreements']);
+Route::get('/getAgreements', [AgreementController::class, 'getAgreements']);
