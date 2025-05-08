@@ -93,6 +93,7 @@ class AgreementController extends Controller
         $ownedAgreements = Agreement::where('user_id', $user->id)
             ->select('id', 'title', 'created_at')
             ->get();
+            dump($ownedAgreements[0]->signStatus->status);
 
         // Get agreements shared with the user
         $sharedAgreementIds = SignStatus::where('user_id', $user->id)
@@ -102,12 +103,12 @@ class AgreementController extends Controller
         $sharedAgreements = Agreement::whereIn('id', $sharedAgreementIds)
             ->select('id', 'title', 'created_at')
             ->get();
+            dd($sharedAgreements[0]->signStatus->status);
 
         // Merge both collections
         $agreements = $ownedAgreements->merge($sharedAgreements);
         // Here i will now filter the agreements by the status.
         $agreements = $agreements->filter(function ($agreement) use ($status) {
-            dd($agreement->signStatus->status);
             return $agreement->sign_status->status == $status;
         });
         // Format the dates and prepare the response data
