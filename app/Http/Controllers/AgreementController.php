@@ -61,9 +61,14 @@ class AgreementController extends Controller
     }
     public function getAgreements(Request $request)
     {
+        $status = $request->status;
+        if(!$status){
+            $status = 'draft';
+        }
         // Validate email
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|exists:users,email',
+            'status' => 'required|string',
         ]);
 
         // If validation fails, return response with errors
@@ -100,6 +105,11 @@ class AgreementController extends Controller
 
         // Merge both collections
         $agreements = $ownedAgreements->merge($sharedAgreements);
+        // Here i will now filter the agreements by the status.
+        $agreements = $agreements->filter(function ($agreement) use ($status) {
+            dd($agreement->signStatus->status);
+            return $agreement->sign_status->status == $status;
+        });
         // Format the dates and prepare the response data
         $formattedAgreements = $agreements->map(function ($agreement) use ($user) {
             return [
