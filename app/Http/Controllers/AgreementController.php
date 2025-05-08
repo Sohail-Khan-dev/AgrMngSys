@@ -98,7 +98,7 @@ class AgreementController extends Controller
             })
             ->select('id', 'title', 'created_at')
             ->get();
-            dd($ownedAgreements);
+            // dd($ownedAgreements);
 
         // Get agreements shared with the user
         $sharedAgreementIds = SignStatus::where('user_id', $user->id)->where('status', $status)
