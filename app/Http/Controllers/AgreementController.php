@@ -91,7 +91,7 @@ class AgreementController extends Controller
 
         // Get agreements owned by the user
         $ownedAgreements = Agreement::where('user_id', $user->id)
-            ->with('signStatus', $status)
+            ->with('signStatus')
             ->select('id', 'title', 'created_at')
             ->get();
             dd($ownedAgreements);
