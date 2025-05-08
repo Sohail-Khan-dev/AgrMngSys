@@ -46,16 +46,28 @@ class AgreementController extends Controller
         $agreement->slug = $request->slug;
         $agreement->agreement_file = $request->agreement_file;
         $agreement->save();
-        // check if the agreement have already a sign status
-        $sign_status = SignStatus::where('agreement_id', $agreement->id)->first();
-        if ($sign_status) {
+        // Get all sign statuses for this agreement
+        $sign_statuses = SignStatus::where('agreement_id', $agreement->id)->get();
+
+        // If no sign statuses exist, create a default one
+        if ($sign_statuses->isEmpty()) {
             $sign_status = new SignStatus();
             $sign_status->user_id = $user->id;
             $sign_status->agreement_id = $agreement->id;
+            $sign_status->signature = $request->signature ?? 'none';
+            $sign_status->status = 'draft';
+            $sign_status->save();
         }
-        $sign_status->signature = $request?->signature || 'none';
-        $sign_status->status = 'draft';
-        $sign_status->save();
+        // check if the agreement have already a sign status
+        // $sign_status = SignStatus::where('agreement_id', $agreement->id)->first();
+        // if (!$sign_status) {
+        //     $sign_status = new SignStatus();
+        //     $sign_status->user_id = $user->id;
+        //     $sign_status->agreement_id = $agreement->id;
+        // }
+        // $sign_status->signature = $request?->signature || 'none';
+        // $sign_status->status = 'draft';
+        // $sign_status->save();
 
         return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
