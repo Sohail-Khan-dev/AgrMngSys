@@ -90,8 +90,12 @@ class AgreementController extends Controller
         }
 
         // Get agreements owned by the user
+        // i wnant to get the agreeements that signStaus is draft
         $ownedAgreements = Agreement::where('user_id', $user->id)
             ->with('signStatus')
+            ->whereHas('signStatus', function ($query) use ($status) {
+                $query->where('status', $status);
+            })
             ->select('id', 'title', 'created_at')
             ->get();
             dd($ownedAgreements);
