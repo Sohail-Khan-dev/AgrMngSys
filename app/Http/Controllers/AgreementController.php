@@ -111,10 +111,6 @@ class AgreementController extends Controller
 
         // Merge both collections
         $agreements = $ownedAgreements->merge($sharedAgreements);
-        // Here i will now filter the agreements by the status.
-        $agreements = $agreements->filter(function ($agreement) use ($status) {
-            return $agreement->sign_status->status == $status;
-        });
         // Format the dates and prepare the response data
         $formattedAgreements = $agreements->map(function ($agreement) use ($user) {
             return [
