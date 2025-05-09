@@ -57,18 +57,7 @@ class AgreementController extends Controller
             $sign_status->signature = $request->signature ?? 'none';
             $sign_status->status = 'draft';
             $sign_status->save();
-        }
-        // check if the agreement have already a sign status
-        // $sign_status = SignStatus::where('agreement_id', $agreement->id)->first();
-        // if (!$sign_status) {
-        //     $sign_status = new SignStatus();
-        //     $sign_status->user_id = $user->id;
-        //     $sign_status->agreement_id = $agreement->id;
-        // }
-        // $sign_status->signature = $request?->signature || 'none';
-        // $sign_status->status = 'draft';
-        // $sign_status->save();
-
+        } 
         return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
     public function getAgreements(Request $request)
@@ -240,10 +229,14 @@ class AgreementController extends Controller
                 $signStatus->agreement_id = $agreement->id;
                 $signStatus->status = 'pending';
                 $signStatus->save();
-
                 $sharedWith = $email;
             }
-        // }
+        $signStatuses = SignStatus::where('agreement_id', $agreement->id)->get();
+        
+        foreach ($signStatuses as $signStatus) {
+            $signStatus->status = 'pending';
+            $signStatus->save();
+        }
 
         return response()->json([
             'status' => true,
