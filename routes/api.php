@@ -19,3 +19,5 @@ Route::post('/getAgreements', [AgreementController::class, 'getAgreements']);
 Route::post('/getSingleAgreement', [AgreementController::class, 'getSigleAgreement']);
 Route::post('/shareAgreement', [AgreementController::class, 'shareAgreement']);
 Route::post('/getAgreementUsers', [AgreementController::class, 'getAgreementUsers']);
+Route::post("/signAgreement",[AgreementController::class,"signAgreement"]);
+Route::post("/declineAgreement",[AgreementController::class,"declineAgreement"]);

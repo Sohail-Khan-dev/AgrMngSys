@@ -305,4 +305,111 @@ class AgreementController extends Controller
             'users' => $users
         ], 200);
     }
+    public function signAgreement(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'agreement_id' => 'required|exists:agreements,id',
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $signStatus = SignStatus::where('agreement_id', $request->agreement_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$signStatus) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User does not have access to this agreement'
+            ], 403);
+        }
+
+        $signStatus->signature = 'true';
+        $signStatus->save();
+
+        // Get all sign statuses for this agreement
+        $allSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)->where("signature","true")->get();
+        
+        // Check if there are multiple signers and all have signed
+        if ($allSignStatuses->count() > 1) {
+            $allSignStatuses->each(function($status) {
+                $status->status = 'complete';
+                $status->save();
+            });
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement signed successfully'
+        ], 200);
+        
+    }
+    public function declineAgreement(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'agreement_id' => 'required|exists:agreements,id',
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $signStatus = SignStatus::where('agreement_id', $request->agreement_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$signStatus) { 
+            return response()->json([
+                'status' => false,
+                'message' => 'User does not have access to this agreement'
+            ], 403);
+        }
+
+        $signStatus->status = 'declined';
+        $signStatus->save();
+        $otherSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)
+            ->where('user_id', '!=', $user->id) ->where('status', 'pending')
+            ->get();
+
+        // Check if there are multiple signers and all have declined
+        if ($otherSignStatuses->count() > 0 ) {
+            $otherSignStatuses->each(function($status) {
+                $status->status = 'rejected';
+                $status->save();
+            });
+        }
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement declined successfully'
+        ], 200);
+    }
+    
 }
