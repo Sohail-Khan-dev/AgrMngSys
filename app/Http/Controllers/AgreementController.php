@@ -19,7 +19,7 @@ class AgreementController extends Controller
             'title' => 'required|string|max:255',
             'agreement_file' => 'required|string',
             'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-
+            'id' => 'nullable|exists:agreements,id|integer',
         ]);
 
         if ($validator->fails()) {
