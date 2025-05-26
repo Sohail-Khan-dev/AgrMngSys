@@ -21,3 +21,4 @@ Route::post('/shareAgreement', [AgreementController::class, 'shareAgreement']);
 Route::post('/getAgreementUsers', [AgreementController::class, 'getAgreementUsers']);
 Route::post("/signAgreement",[AgreementController::class,"signAgreement"]);
 Route::post("/declineAgreement",[AgreementController::class,"declineAgreement"]);
+Route::get('/signature/{filename}', [AgreementController::class, 'getSignatureImage']);

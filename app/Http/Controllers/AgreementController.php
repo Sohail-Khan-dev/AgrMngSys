@@ -7,6 +7,7 @@ use App\Models\SignStatus;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AgreementController extends Controller
 {
@@ -17,8 +18,8 @@ class AgreementController extends Controller
             'slug' => 'required|string',
             'title' => 'required|string|max:255',
             'agreement_file' => 'required|string',
-            'signature' => 'nullable|string',
-            
+            'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+
         ]);
 
         if ($validator->fails()) {
@@ -51,13 +52,22 @@ class AgreementController extends Controller
 
         // If no sign statuses exist, create a default one
         if ($sign_statuses->isEmpty()) {
+            $signaturePath = null;
+
+            // Handle signature image upload
+            if ($request->hasFile('signature')) {
+                $signatureFile = $request->file('signature');
+                $fileName = 'signature_' . $user->id . '_' . $agreement->id . '_' . time() . '.' . $signatureFile->getClientOriginalExtension();
+                $signaturePath = $signatureFile->storeAs('signatures', $fileName, 'public');
+            }
+
             $sign_status = new SignStatus();
             $sign_status->user_id = $user->id;
             $sign_status->agreement_id = $agreement->id;
-            $sign_status->signature = $request->signature ?? 'none';
+            $sign_status->signature = $signaturePath ?? 'none';
             $sign_status->status = 'draft';
             $sign_status->save();
-        } 
+        }
         return response()->json(['agreement_id'=>$agreement->id, 'message' => 'Agreement created successfully'], 200);
     }
     public function getAgreements(Request $request)
@@ -232,7 +242,7 @@ class AgreementController extends Controller
                 $sharedWith = $email;
             }
         $signStatuses = SignStatus::where('agreement_id', $agreement->id)->get();
-        
+
         foreach ($signStatuses as $signStatus) {
             $signStatus->status = 'pending';
             $signStatus->save();
@@ -283,12 +293,20 @@ class AgreementController extends Controller
         foreach ($signStatuses as $signStatus) {
             $user = User::find($signStatus->user_id);
             if ($user) {
+                // Generate signature URL if signature exists and is not 'none' or 'true'
+                $signatureUrl = null;
+                if ($signStatus->signature && $signStatus->signature !== 'none' && $signStatus->signature !== 'true') {
+                    $filename = basename($signStatus->signature);
+                    $signatureUrl = url('/api/signature/' . $filename);
+                }
+
                 $users[] = [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
                     'status' => $signStatus->status,
                     'signature' => $signStatus->signature,
+                    'signature_url' => $signatureUrl,
                     'shared_at' => $signStatus->created_at->format('Y-m-d')
                 ];
             }
@@ -306,6 +324,78 @@ class AgreementController extends Controller
         ], 200);
     }
     public function signAgreement(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'agreement_id' => 'required|exists:agreements,id',
+            'email' => 'required|email|exists:users,email',
+            'signature' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        $signStatus = SignStatus::where('agreement_id', $request->agreement_id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$signStatus) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User does not have access to this agreement'
+            ], 403);
+        }
+
+        // Handle signature image upload
+        if ($request->hasFile('signature')) {
+            // Delete old signature if exists
+            if ($signStatus->signature && $signStatus->signature !== 'none' && $signStatus->signature !== 'true') {
+                Storage::disk('public')->delete($signStatus->signature);
+            }
+
+            $signatureFile = $request->file('signature');
+            $fileName = 'signature_' . $user->id . '_' . $request->agreement_id . '_' . time() . '.' . $signatureFile->getClientOriginalExtension();
+            $signaturePath = $signatureFile->storeAs('signatures', $fileName, 'public');
+
+            $signStatus->signature = $signaturePath;
+        } else {
+            $signStatus->signature = 'true';
+        }
+
+        $signStatus->save();
+
+        // Get all sign statuses for this agreement that have been signed (signature is not 'none')
+        $allSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)
+            ->where('signature', '!=', 'none')
+            ->get();
+
+        // Check if there are multiple signers and all have signed
+        if ($allSignStatuses->count() > 1) {
+            $allSignStatuses->each(function($status) {
+                $status->status = 'complete';
+                $status->save();
+            });
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Agreement signed successfully'
+        ], 200);
+
+    }
+    public function declineAgreement(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'agreement_id' => 'required|exists:agreements,id',
@@ -339,60 +429,6 @@ class AgreementController extends Controller
             ], 403);
         }
 
-        $signStatus->signature = 'true';
-        $signStatus->save();
-
-        // Get all sign statuses for this agreement
-        $allSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)->where("signature","true")->get();
-        
-        // Check if there are multiple signers and all have signed
-        if ($allSignStatuses->count() > 1) {
-            $allSignStatuses->each(function($status) {
-                $status->status = 'complete';
-                $status->save();
-            });
-        }
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Agreement signed successfully'
-        ], 200);
-        
-    }
-    public function declineAgreement(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'agreement_id' => 'required|exists:agreements,id',
-            'email' => 'required|email|exists:users,email',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json([
-                'status' => false,
-                'message' => 'User not found'
-            ], 404);
-        }
-
-        $signStatus = SignStatus::where('agreement_id', $request->agreement_id)
-            ->where('user_id', $user->id)
-            ->first();
-
-        if (!$signStatus) { 
-            return response()->json([
-                'status' => false,
-                'message' => 'User does not have access to this agreement'
-            ], 403);
-        }
-
         $signStatus->status = 'declined';
         $signStatus->save();
         $otherSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)
@@ -411,5 +447,26 @@ class AgreementController extends Controller
             'message' => 'Agreement declined successfully'
         ], 200);
     }
-    
+
+    /**
+     * Serve signature image
+     */
+    public function getSignatureImage($filename)
+    {
+        $path = 'signatures/' . $filename;
+
+        if (!Storage::disk('public')->exists($path)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Signature image not found'
+            ], 404);
+        }
+
+        $fullPath = Storage::disk('public')->path($path);
+        $mimeType = mime_content_type($fullPath);
+        $file = Storage::disk('public')->get($path);
+
+        return response($file, 200)->header('Content-Type', $mimeType);
+    }
+
 }

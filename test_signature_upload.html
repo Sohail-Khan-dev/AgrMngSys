@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+        .signature-preview {
+            max-width: 300px;
+            max-height: 150px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Signature Upload Test</h1>
+    
+    <h2>1. Create Agreement with Signature</h2>
+    <form id="createAgreementForm">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="slug">Slug:</label>
+            <input type="text" id="slug" name="slug" required>
+        </div>
+        <div class="form-group">
+            <label for="agreement_file">Agreement Content:</label>
+            <textarea id="agreement_file" name="agreement_file" rows="4" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="signature">Signature Image:</label>
+            <input type="file" id="signature" name="signature" accept="image/*">
+            <div id="signaturePreview"></div>
+        </div>
+        <button type="submit">Create Agreement</button>
+    </form>
+    <div id="createResult" class="result" style="display: none;"></div>
+
+    <h2>2. Sign Agreement</h2>
+    <form id="signAgreementForm">
+        <div class="form-group">
+            <label for="signEmail">Email:</label>
+            <input type="email" id="signEmail" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="agreementId">Agreement ID:</label>
+            <input type="number" id="agreementId" name="agreement_id" required>
+        </div>
+        <div class="form-group">
+            <label for="signSignature">Signature Image:</label>
+            <input type="file" id="signSignature" name="signature" accept="image/*" required>
+            <div id="signSignaturePreview"></div>
+        </div>
+        <button type="submit">Sign Agreement</button>
+    </form>
+    <div id="signResult" class="result" style="display: none;"></div>
+
+    <h2>3. Get Agreement Users</h2>
+    <form id="getUsersForm">
+        <div class="form-group">
+            <label for="getUsersAgreementId">Agreement ID:</label>
+            <input type="number" id="getUsersAgreementId" name="agreement_id" required>
+        </div>
+        <button type="submit">Get Users</button>
+    </form>
+    <div id="usersResult" class="result" style="display: none;"></div>
+
+    <script>
+        // Preview signature images
+        function setupImagePreview(inputId, previewId) {
+            document.getElementById(inputId).addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                const preview = document.getElementById(previewId);
+                
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="signature-preview" alt="Signature Preview">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    preview.innerHTML = '';
+                }
+            });
+        }
+
+        setupImagePreview('signature', 'signaturePreview');
+        setupImagePreview('signSignature', 'signSignaturePreview');
+
+        // Create Agreement Form
+        document.getElementById('createAgreementForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('createResult');
+            
+            try {
+                const response = await fetch('/api/create_agreement', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultDiv.style.display = 'block';
+                
+                if (data.agreement_id) {
+                    document.getElementById('agreementId').value = data.agreement_id;
+                    document.getElementById('getUsersAgreementId').value = data.agreement_id;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // Sign Agreement Form
+        document.getElementById('signAgreementForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('signResult');
+            
+            try {
+                const response = await fetch('/api/signAgreement', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // Get Users Form
+        document.getElementById('getUsersForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('usersResult');
+            
+            try {
+                const response = await fetch('/api/getAgreementUsers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        agreement_id: formData.get('agreement_id')
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Display results with signature images
+                let html = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                if (data.users) {
+                    html += '<h3>Signature Images:</h3>';
+                    data.users.forEach(user => {
+                        if (user.signature_url) {
+                            html += `
+                                <div>
+                                    <p><strong>${user.name} (${user.email}):</strong></p>
+                                    <img src="${user.signature_url}" class="signature-preview" alt="Signature" 
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                    <p style="display: none; color: red;">Failed to load signature image</p>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                
+                resultDiv.innerHTML = html;
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
