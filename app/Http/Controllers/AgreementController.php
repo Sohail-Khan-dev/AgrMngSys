@@ -37,7 +37,7 @@ class AgreementController extends Controller
                 'message' => 'User not found'
             ], 404);
         }
-        if($request->id !== 0){
+        if($request->id !== 0 && $request->id !== null){
             $agreement = Agreement::find($request->id);
         }else{
             $agreement = new Agreement();
