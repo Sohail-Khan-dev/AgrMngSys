@@ -194,9 +194,11 @@ class AgreementController extends Controller
                 'status' => $status->status
             ];
         });
+
         $signatre_status = $signatures[0]['user_id'] == $agreement->user_id ? $signatures[0]['status'] : null;
-        dd($signatures);
         // Format the agreement data with formatted dates
+        $signUrl2 = SignStatus::where('agreement_id', $request->id)->where('user_id', '!=', $agreement->user_id)->first();
+        dd($signUrl2);
         $formattedAgreement = [
             'id' => $agreement->id,
             'user_id' => $agreement->user_id,
