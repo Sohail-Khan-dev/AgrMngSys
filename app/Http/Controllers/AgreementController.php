@@ -195,7 +195,7 @@ class AgreementController extends Controller
             ];
         });
         $signatre_status = $signatures[0]['user_id'] == $agreement->user_id ? $signatures[0]['status'] : null;
-
+        dd($signatures);
         // Format the agreement data with formatted dates
         $formattedAgreement = [
             'id' => $agreement->id,
