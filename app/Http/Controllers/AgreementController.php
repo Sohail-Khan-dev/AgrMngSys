@@ -109,10 +109,9 @@ class AgreementController extends Controller
             })
             ->select('id', 'title', 'created_at')
             ->get();
-            // dd($ownedAgreements);
 
         // Get agreements shared with the user
-        $sharedAgreementIds = SignStatus::where('user_id', $user->id)->where('status', $status)
+        $sharedAgreementIds = SignStatus::with('user')->where('user_id', $user->id)->where('status', $status)
             ->pluck('agreement_id')
             ->toArray();
 
@@ -124,11 +123,16 @@ class AgreementController extends Controller
         $agreements = $ownedAgreements->merge($sharedAgreements);
         // Format the dates and prepare the response data
         $formattedAgreements = $agreements->map(function ($agreement) use ($user) {
+            $shared_with = SignStatus::with('user')->where('agreement_id', $agreement->id)
+                ->where('user_id', '!=', $user->id)  // Get all users except the current user
+                ->first();
             return [
                 'id' => $agreement->id,
                 'title' => $agreement->title,
                 'created_at' => $agreement->created_at->format('Y-m-d'),
-                'is_owner' => $agreement->user_id == $user->id
+                'is_owner' => $agreement->user_id == $user->id,
+                'shared_with' => $shared_with ? $shared_with->user->name : null
+
             ];
         });
 
@@ -344,7 +348,7 @@ class AgreementController extends Controller
         $validator = Validator::make($request->all(), [
             'agreement_id' => 'required|exists:agreements,id',
             'email' => 'required|email|exists:users,email',
-            'signature' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         if ($validator->fails()) {
@@ -398,7 +402,9 @@ class AgreementController extends Controller
             ->get();
 
         // Check if there are multiple signers and all have signed
-        if ($allSignStatuses->count() > 1) {
+        if ($allSignStatuses->count() > 1 && $allSignStatuses->every(function($status) {
+            return $status->signature !== 'none';
+        })) {
             $allSignStatuses->each(function($status) {
                 $status->status = 'complete';
                 $status->save();
