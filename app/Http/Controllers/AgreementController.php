@@ -182,13 +182,19 @@ class AgreementController extends Controller
             ], 404);
         }
 
-        // Get signature information
-        $signStatus = $agreement->signStatus->first();
-        $signatureUrl = null;
-        
-        if ($signStatus && $signStatus->signature && $signStatus->signature !== 'none' && $signStatus->signature !== 'true') {
-            $signatureUrl = Storage::disk('public')->url($signStatus->signature);
-        }
+       // Get signatures from both users
+        $signatures = $agreement->signStatus->map(function($status) {
+            $signatureUrl = null;
+            if ($status->signature && $status->signature !== 'none') {
+                $signatureUrl = Storage::disk('public')->url($status->signature);
+            }
+            return [
+                'user_id' => $status->user_id,
+                'signature_url' => $signatureUrl,
+                'status' => $status->status
+            ];
+        });
+        $signatre_status = $signatures[0]['user_id'] == $agreement->user_id ? $signatures[0]['status'] : null;
 
         // Format the agreement data with formatted dates
         $formattedAgreement = [
@@ -197,8 +203,9 @@ class AgreementController extends Controller
             'title' => $agreement->title,
             'slug' => $agreement->slug,
             'agreement_file' => $agreement->agreement_file,
-            'signature_url' => $signatureUrl,
-            'signature_status' => $signStatus ? $signStatus->status : null,
+            'signature_url1' => $signatures[0]['signature_url'] ?? null,
+            'signature_url2' => $signatures[1]['signature_url'] ?? null,
+            'signature_status' => $signatre_status,
             'created_at' => $agreement->created_at->format('Y-m-d'),
             'updated_at' => $agreement->updated_at->format('Y-m-d')
         ];
@@ -348,7 +355,7 @@ class AgreementController extends Controller
         $validator = Validator::make($request->all(), [
             'agreement_id' => 'required|exists:agreements,id',
             'email' => 'required|email|exists:users,email',
-            'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         if ($validator->fails()) {
