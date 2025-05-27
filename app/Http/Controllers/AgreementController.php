@@ -190,9 +190,9 @@ class AgreementController extends Controller
         })->values();
 
         // Get owner's signature status
-        $ownerSignature = $signatures->firstWhere('user_id', $agreement->user_id)->signature ?? null;
-        $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id)->signature ?? null;
-        
+        $ownerSignature = $signatures->firstWhere('user_id', $agreement->user_id) ?? null;
+        $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id) ?? null;
+        dd($otherSignature, $otherSignature);
         if ($ownerSignature && $ownerSignature['signature_url']) {
             $ownerSignature['signature_url'] = Storage::disk('public')->url($ownerSignature);
         }
