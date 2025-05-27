@@ -192,6 +192,13 @@ class AgreementController extends Controller
         // Get owner's signature status
         $ownerSignature = $signatures->firstWhere('user_id', $agreement->user_id);
         $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id);
+        
+        if ($ownerSignature && $ownerSignature['signature_url']) {
+            $ownerSignature['signature_url'] = Storage::disk('public')->url($ownerSignature['signature_url']);
+        }
+        if ($otherSignature && $otherSignature['signature_url']) {
+            $otherSignature['signature_url'] = Storage::disk('public')->url($otherSignature['signature_url']);
+        }
 
         // Format the agreement data with formatted dates
         $formattedAgreement = [
