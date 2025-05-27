@@ -188,7 +188,7 @@ class AgreementController extends Controller
                 'status' => $status->status
             ];
         })->values();
-
+        dd($signatures);
         // Get owner's signature status
         $ownerSignature = $signatures->firstWhere('user_id', $agreement->user_id) ?? null;
         $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id) ?? null;
