@@ -166,14 +166,8 @@ class AgreementController extends Controller
             ], 422);
         }
 
-        $agreement = Agreement::with(['signStatus' => function($query) use ($request) {
-            $query->where('user_id', function($subquery) use ($request) {
-                $subquery->select('id')
-                        ->from('users')
-                        ->where('email', $request->email)
-                        ->first();
-            });
-        }])->where('id', $request->id)->first();
+        // Remove the user filter to get all sign statuses
+        $agreement = Agreement::with('signStatus')->where('id', $request->id)->first();
 
         if (!$agreement) {
             return response()->json([
@@ -193,8 +187,11 @@ class AgreementController extends Controller
                 'signature_url' => $signatureUrl,
                 'status' => $status->status
             ];
-        });
-        $signatre_status = $signatures[0]['user_id'] == $agreement->user_id ? $signatures[0]['status'] : null;
+        })->values();
+
+        // Get owner's signature status
+        $ownerSignature = $signatures->firstWhere('user_id', $agreement->user_id);
+        $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id);
 
         // Format the agreement data with formatted dates
         $formattedAgreement = [
@@ -203,9 +200,9 @@ class AgreementController extends Controller
             'title' => $agreement->title,
             'slug' => $agreement->slug,
             'agreement_file' => $agreement->agreement_file,
-            'signature_url1' => $signatures[0]['signature_url'] ?? null,
-            'signature_url2' => $signatures[1]['signature_url'] ?? null,
-            'signature_status' => $signatre_status,
+            'signature_url1' => $ownerSignature ? $ownerSignature['signature_url'] : null,
+            'signature_url2' => $otherSignature ? $otherSignature['signature_url'] : null,
+            'signature_status' => $ownerSignature ? $ownerSignature['status'] : null,
             'created_at' => $agreement->created_at->format('Y-m-d'),
             'updated_at' => $agreement->updated_at->format('Y-m-d')
         ];
