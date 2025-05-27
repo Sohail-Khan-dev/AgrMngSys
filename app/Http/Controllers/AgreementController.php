@@ -194,10 +194,10 @@ class AgreementController extends Controller
         $otherSignature = $signatures->firstWhere('user_id', '!=', $agreement->user_id);
         
         if ($ownerSignature && $ownerSignature['signature_url']) {
-            $ownerSignature['signature_url'] = Storage::disk('public')->url($ownerSignature['signature_url']);
+            $ownerSignature['signature_url'] = Storage::disk('public')->url($ownerSignature['signature']);
         }
         if ($otherSignature && $otherSignature['signature_url']) {
-            $otherSignature['signature_url'] = Storage::disk('public')->url($otherSignature['signature_url']);
+            $otherSignature['signature_url'] = Storage::disk('public')->url($otherSignature['signature']);
         }
 
         // Format the agreement data with formatted dates
