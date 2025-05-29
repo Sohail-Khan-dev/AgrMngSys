@@ -359,9 +359,9 @@ class AgreementController extends Controller
             'email' => 'required|email|exists:users,email',
             'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
-        return response()->json([
-           'message' => $request->all()
-        ], 222);
+        // return response()->json([
+        //    'message' => $request->all()
+        // ], 222);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
