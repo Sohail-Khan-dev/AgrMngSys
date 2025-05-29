@@ -399,15 +399,21 @@ class AgreementController extends Controller
             $signaturePath = $signatureFile->storeAs('signatures', $fileName, 'public');
 
             $signStatus->signature = $signaturePath;
-        } else {
-            $signStatus->signature = 'true';
+        }
+         else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Signature image is required'
+            ], 422);
         }
 
         $signStatus->save();
 
         // Get all sign statuses for this agreement that have been signed (signature is not 'none')
         $allSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)
-            ->where('signature', '!=', 'none')
+            ->where('signature', '!=', 'none') // signature is not null
+            ->where('signature', '!=', null) 
+
             ->get();
 
         // Check if there are multiple signers and all have signed
