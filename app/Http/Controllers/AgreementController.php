@@ -359,7 +359,7 @@ class AgreementController extends Controller
             'email' => 'required|email|exists:users,email',
             'signature' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
-
+        dd($request->all());
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
@@ -399,6 +399,8 @@ class AgreementController extends Controller
             $signaturePath = $signatureFile->storeAs('signatures', $fileName, 'public');
 
             $signStatus->signature = $signaturePath;
+            $signStatus->save();
+
         }
          else {
             return response()->json([
@@ -407,7 +409,6 @@ class AgreementController extends Controller
             ], 422);
         }
 
-        $signStatus->save();
 
         // Get all sign statuses for this agreement that have been signed (signature is not 'none')
         $allSignStatuses = SignStatus::where('agreement_id', $request->agreement_id)
