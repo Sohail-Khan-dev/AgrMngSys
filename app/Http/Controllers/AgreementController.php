@@ -361,7 +361,7 @@ class AgreementController extends Controller
         ]);
         return response()->json([
            'message' => $request->all()
-        ]);
+        ], 222);
         if ($validator->fails()) {
             return response()->json([
                 'status' => false,
